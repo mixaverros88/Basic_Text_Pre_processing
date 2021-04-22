@@ -1,3 +1,7 @@
+"""
+Mike-George Verros
+"""
+
 import re
 
 
@@ -6,7 +10,7 @@ def get_month_list():
     return ['Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov']
 
 
-def get_list_of_end_words():
+def get_list_of_punctuations():
     """Get a list of end words """
     return ['.', '!', '?']
 
@@ -37,15 +41,18 @@ def get_sample_text_file_path():
 
 
 def generate_results_file(results):
-    f = open(get_generated_file_path() + get_generated_file_name(), "w+")
+    """This is a function create a txt file with the results """
+    generated_file = open(get_generated_file_path() + get_generated_file_name(), "w+")
     for i in results:
-        f.write(i[0] + str(i[1]) + '\n')
-    f.close()
+        generated_file.write(i[0] + str(i[1]) + '\n')
+    generated_file.close()
 
 
 def sanitize_string(txt):
-    """This is a custom sanitizer function in order to get rid of same unneeded characters for easiest text manipulation"""
-    list_with = get_list_of_end_words() + get_list_of_end_words() + ['-', ',', '\'', '"', '\n', '\t', '\r', '(', ')']
+    """This is a custom sanitizer function in order to get rid of same unneeded characters for easiest text
+    manipulation """
+    list_with \
+        = get_list_of_punctuations() + get_list_of_punctuations() + ['-', ',', '\'', '"', '\n', '\t', '\r', '(', ')']
     for char in list_with:
         if char != '-' and char != '\n':
             txt = txt.replace(char, "")
@@ -54,13 +61,13 @@ def sanitize_string(txt):
     return remove_double_spaces(txt).strip()
 
 
-def count_paragraphs(txt):
+def sum_of_paragraphs(txt):
     """In order to count the total sum ot paragraphs we split the txt on every change line character \n"""
     counter = 1  # initialized the counter from 1 since the last paragraph is always omitted
     previous_char = ''
     for c in txt:
         if c == '\n':
-            if previous_char != '\n':
+            if previous_char != '\n':  # check if the previous character is new line in order to tackle multiples lines
                 counter += 1
         previous_char = c
     return counter
@@ -71,9 +78,9 @@ def count_number_of_characters(txt):
     return len(txt)
 
 
-def count_sentences(txt):
+def sum_of_sentences(txt):
     number_of_characters = count_number_of_characters(txt)
-    list_of_end_word = get_list_of_end_words()
+    list_of_end_word = get_list_of_punctuations()
     list_of_months = get_month_list()
     counter = 0
     previous_char = ''
@@ -81,9 +88,9 @@ def count_sentences(txt):
     pre_pre_previous_char = ''
     for idx, c in enumerate(txt):
         if c in list_of_end_word:
-            if previous_char not in list_of_end_word and previous_char:
-                if pre_previous_char not in list_of_end_word and previous_char:
-                    if pre_pre_previous_char not in list_of_end_word and previous_char:
+            if previous_char not in list_of_end_word:
+                if pre_previous_char not in list_of_end_word:
+                    if pre_pre_previous_char not in list_of_end_word:
                         if (pre_pre_previous_char + pre_previous_char + previous_char) not in list_of_months:
                             if idx + 1 < number_of_characters:
                                 if txt[idx + 1] not in list_of_end_word:
@@ -100,8 +107,7 @@ def count_sentences(txt):
     return counter
 
 
-def count_words(txt):
-    counter = 0
+def sum_of_words(txt):
     list_of_p = ['(', ')', ',', ':', '!', ' ', '\n', '.']
     words = []
     word = ''
@@ -112,20 +118,37 @@ def count_words(txt):
             words.append(w)
             word = ''
         else:
-            word = word+w
-    while '' in words : words.remove('')
-    while ' ' in words : words.remove(' ')
-    while '\n' in words : words.remove('\n')
-    print(words)
-    return counter
+            word = word + w
+    while '' in words: words.remove('')
+    while ' ' in words: words.remove(' ')
+    while '\n' in words: words.remove('\n')
+    return len(words)
+
+
+def tokenization(txt):
+    list_of_p = ['(', ')', ',', ':', '!', ' ', '\n', '.']
+    words = []
+    word = ''
+    for w in txt:
+        if any(w in s for s in list_of_p):
+            if word != '':
+                words.append(word)
+            words.append(w)
+            word = ''
+        else:
+            word = word + w
+    while '' in words: words.remove('')
+    while ' ' in words: words.remove(' ')
+    while '\n' in words: words.remove('\n')
+    return words
 
 
 def get_words(txt):
     return txt.split(' ')
 
 
-def count_distinct_words(txt):
-    return len(set(txt))
+def sum_of_distinct_words(txt):
+    return len(set(tokenization(txt)))
 
 
 def get_stop_words_list():
@@ -142,15 +165,19 @@ def remove_stop_words(txt):
     return new_list
 
 
-def word_frequency(txt):
-    case_list = []
-    for word in txt:
-        if word in case_list:
-            print(case.get(word))
-            case_list.append(case.get(word) + 1)
-        else:
-            case = {'word': word, 'frequecy': 1}
-        case_list.append(case)
-    print(case_list)
-    return case_list
+# https://stackoverflow.com/questions/62918528/sort-dict-or-list-by-second-value-of-the-tuple-and-then-by-the-first-one
+def order_dictionary(data):
+    return sorted(data.items(), key=lambda x: (x[1], [-ord(letter) for letter in x[0]]), reverse=True)
 
+
+def word_frequency(txt):
+    word_frequency_list = {}
+    for w in txt:
+        if not word_frequency_list.__contains__(w):
+            d = {w: 1}
+            word_frequency_list.update(d)
+        else:
+            count = word_frequency_list.pop(w) + 1
+            d = {w: count}
+            word_frequency_list.update(d)
+    return order_dictionary(word_frequency_list)

@@ -1,22 +1,23 @@
-from functions import *
+"""
+Mike-George Verros
+"""
+
+from functions.functions import *
 
 txt = open(get_sample_text_file_path()).read()
 
 sanitized_str = sanitize_string(txt)
-results = [['Sum of Paragraphs: ', count_paragraphs(txt)],
-           ['Sum of Sentences: ', count_sentences(txt)],
-           ['Count Words: ', count_words(txt)],
-           ['Count Distinct Words: ', count_distinct_words(sanitized_str)],
-           ['Remove Stop Words: ', remove_stop_words(sanitized_str)],
+removed_stop_word_txt = remove_stop_words(sanitized_str)
+tokenized_txt = tokenization(txt)
+
+results = [['Sum of Paragraphs: ', sum_of_paragraphs(txt)],
+           ['Sum of Sentences: ', sum_of_sentences(txt)],
+           ['Sum of Words: ', sum_of_words(txt)],
+           ['Sum of Distinct Words: ', sum_of_distinct_words(txt)],
+           ['Sum of Words After Removing Stop Words : ', len(removed_stop_word_txt)],
+           ['Words List After Removing Stop Words : ', removed_stop_word_txt],
            ['Get Words: ', get_words(sanitized_str)],
-           ['Get Words Frequency: ', word_frequency(['mike','mike'])]]
+           ['Get Words Frequency: ', word_frequency(tokenized_txt)]]
 
 generate_results_file(results)
-
-# print('Sum of Paragraphs: ', count_paragraphs(txt))
-# print('Sum of Sentences: ', count_sentences(txt))
-# print('Count Words: ', count_words(txt))
-# print('Count Distinct Words: ', count_distinct_words(txt))
-# print('Remove Stop Words: ', remove_stop_words(txt))
-# print('Get Words: ', get_words(txt))
 
