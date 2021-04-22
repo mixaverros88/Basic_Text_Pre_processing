@@ -1,8 +1,12 @@
 """
 Mike-George Verros
+ITC6010A1 - NATURAL LANGUAGE PROCESSING - SPRING TERM 2021
+HW#1
 """
 
 import re
+import matplotlib.pyplot as plt
+from wordcloud import WordCloud
 
 
 def get_month_list():
@@ -104,6 +108,7 @@ def sum_of_sentences(txt):
             pre_previous_char = txt[idx - 1]
         if idx > 1:
             pre_pre_previous_char = txt[idx - 2]
+    print('sum_of_sentences: ', counter)
     return counter
 
 
@@ -122,6 +127,15 @@ def sum_of_words(txt):
     while '' in words: words.remove('')
     while ' ' in words: words.remove(' ')
     while '\n' in words: words.remove('\n')
+    while '.' in words: words.remove('.')
+    while ',' in words: words.remove(',')
+    while ':' in words: words.remove(':')
+    while '!' in words: words.remove('!')
+    while '(' in words: words.remove('(')
+    while ')' in words: words.remove(')')
+    print(words)
+    print('sum_of_words: ', len(words))
+
     return len(words)
 
 
@@ -144,10 +158,12 @@ def tokenization(txt):
 
 
 def get_words(txt):
+    print('get_words: ', txt.split(' '))
     return txt.split(' ')
 
 
 def sum_of_distinct_words(txt):
+    print('sum_of_distinct_words: ', len(set(tokenization(txt))))
     return len(set(tokenization(txt)))
 
 
@@ -162,6 +178,7 @@ def remove_stop_words(txt):
     for word in get_words(txt):
         if word not in stop_words_list:
             new_list.append(word)
+    print('remove_stop_words: ', new_list)
     return new_list
 
 
@@ -180,4 +197,16 @@ def word_frequency(txt):
             count = word_frequency_list.pop(w) + 1
             d = {w: count}
             word_frequency_list.update(d)
+    print('word_frequency:', order_dictionary(word_frequency_list))
     return order_dictionary(word_frequency_list)
+
+
+def generate_world_cloud(word_list):
+    word_list = [f[0] for f in word_list][:50]  # convert a list of dictionaries to a list of strings
+    unique_string = " ".join(word_list)  # convert list to string and generate
+    word_cloud = WordCloud(width=1000, height=500).generate(unique_string)
+    plt.figure(figsize=(15, 8))
+    plt.imshow(word_cloud)
+    plt.axis('off')
+    plt.savefig(get_generated_file_path() + 'word_cloud' + '.png', bbox_inches='tight')
+    plt.close()

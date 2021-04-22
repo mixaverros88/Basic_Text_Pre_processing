@@ -1,5 +1,7 @@
 """
 Mike-George Verros
+ITC6010A1 - NATURAL LANGUAGE PROCESSING - SPRING TERM 2021
+HW#1
 """
 
 from functions.functions import *
@@ -19,5 +21,6 @@ results = [['Sum of Paragraphs: ', sum_of_paragraphs(txt)],
            ['Get Words: ', get_words(sanitized_str)],
            ['Get Words Frequency: ', word_frequency(tokenized_txt)]]
 
+generate_world_cloud(word_frequency(tokenized_txt))
 generate_results_file(results)
 
