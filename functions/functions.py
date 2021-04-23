@@ -7,6 +7,7 @@ HW#1
 import re
 import matplotlib.pyplot as plt
 from wordcloud import WordCloud
+import inflect
 
 
 def get_month_list():
@@ -14,7 +15,7 @@ def get_month_list():
     return ['Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov']
 
 
-def get_list_of_punctuations():
+def get_list_of_end_sentence_character():
     """Get a list of end words """
     return ['.', '!', '?']
 
@@ -55,14 +56,15 @@ def generate_results_file(results):
 def sanitize_string(txt):
     """This is a custom sanitizer function in order to get rid of same unneeded characters for easiest text
     manipulation """
-    list_with \
-        = get_list_of_punctuations() + get_list_of_punctuations() + ['-', ',', '\'', '"', '\n', '\t', '\r', '(', ')']
+    list_with = get_list_of_end_sentence_character() + ['-', ',', '\'', '"', '\n', '\t', '\r', '(', ')']
     for char in list_with:
         if char != '-' and char != '\n':
             txt = txt.replace(char, "")
         else:
             txt = txt.replace(char, " ")
-    return remove_double_spaces(txt).strip()
+    sanitized_string = remove_double_spaces(txt).strip()
+    print("sanitize_string: ", sanitized_string)
+    return sanitized_string
 
 
 def sum_of_paragraphs(txt):
@@ -74,6 +76,7 @@ def sum_of_paragraphs(txt):
             if previous_char != '\n':  # check if the previous character is new line in order to tackle multiples lines
                 counter += 1
         previous_char = c
+    print('sum_of_paragraphs: ', counter)
     return counter
 
 
@@ -84,7 +87,7 @@ def count_number_of_characters(txt):
 
 def sum_of_sentences(txt):
     number_of_characters = count_number_of_characters(txt)
-    list_of_end_word = get_list_of_punctuations()
+    list_of_end_word = get_list_of_end_sentence_character()
     list_of_months = get_month_list()
     counter = 0
     previous_char = ''

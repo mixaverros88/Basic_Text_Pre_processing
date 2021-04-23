@@ -12,9 +12,9 @@ sanitized_str = sanitize_string(txt)
 removed_stop_word_txt = remove_stop_words(sanitized_str)
 tokenized_txt = tokenization(txt)
 
-results = [['Sum of Paragraphs: ', sum_of_paragraphs(txt)],
-           ['Sum of Sentences: ', sum_of_sentences(txt)],
-           ['Sum of Words: ', sum_of_words(txt)],
+results = [['a.	Number of paragraphs.: ', sum_of_paragraphs(txt)],
+           ['b.	Number of sentences.: ', sum_of_sentences(txt)],
+           ['c.	Number of words : ', sum_of_words(txt)],
            ['Sum of Distinct Words: ', sum_of_distinct_words(txt)],
            ['Sum of Words After Removing Stop Words : ', len(removed_stop_word_txt)],
            ['Words List After Removing Stop Words : ', removed_stop_word_txt],
