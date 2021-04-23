@@ -8,6 +8,7 @@ import re
 import matplotlib.pyplot as plt
 from wordcloud import WordCloud
 import inflect
+from collections import Counter
 
 
 def get_month_list():
@@ -202,6 +203,39 @@ def word_frequency(txt):
             word_frequency_list.update(d)
     print('word_frequency:', order_dictionary(word_frequency_list))
     return order_dictionary(word_frequency_list)
+
+
+def get_list_of_taggers():
+    return [
+        ["^-?[0-9]+(.[0-9]+)?$", 'CD'],
+        ["(The|the|A|a|An|an)$", 'AT'],
+        [".*able$", 'JJ'],
+        [".*ness$", 'NN'],
+        [".*ly$", 'RB'],
+        [".*s$", 'NNS'],
+        [".*ing$", 'VBG'],
+        [".*ed$", 'VBD'],
+        [".*", 'NN']
+    ]
+
+
+def word_type(txt):
+    word_frequency_list = {}
+    for w in txt:
+        for rg in get_list_of_taggers():
+            if re.search(rg[0], w):
+                d = {w: rg[1]}
+                word_frequency_list.update(d)
+                break
+    return word_frequency_list
+
+
+def sum_of_distinct_word_types(txt):
+    word_frequency_list = word_type(txt)
+    list_of_pos = []
+    for value in word_frequency_list:
+        list_of_pos.append(word_frequency_list[value])
+    return Counter(list_of_pos)
 
 
 def generate_world_cloud(word_list):
