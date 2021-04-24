@@ -143,14 +143,54 @@ def sum_of_words(txt):
     return len(words)
 
 
+def get_additional_contractions():
+    return [
+        ['won', 'will'],
+        ['Won', 'will'],
+        ['can', 'can'],
+        ['Can', 'can']
+    ]
+
+
+def get_contractions():
+    return [
+        ['ll', 'will'],
+        ['ve', 'have'],
+        ['d', 'would'],
+        ['t', 'not'],
+        ['re', 'are'],
+        ['m', 'am'],
+        ['s', 'is']
+    ]
+
+
 def tokenization(txt):
     list_of_p = ['(', ')', ',', ':', '!', ' ', '\n', '.']
     words = []
     word = ''
-    for w in txt:
+    for idx, w in enumerate(txt):
         if any(w in s for s in list_of_p):
             if word != '':
-                words.append(word)
+                if '\'' in word:
+                    splitted_word = word.split('\'')
+                    for con in get_contractions():
+                        if con[0] == splitted_word[1]:
+                            if con[0] == 't':
+                                isN = True
+                                for con2 in get_additional_contractions():
+                                    if con2[0] == splitted_word[0]:
+                                        words.append(con2[1])
+                                        isN = False
+                                if isN:
+                                    words.append(splitted_word[0][:-1])
+                                    words.append(con[1])
+                                    word = ''
+                            else:
+                                words.append(splitted_word[0])
+                                words.append(con[1])
+                                word = ''
+                else:
+                    words.append(word)
             words.append(w)
             word = ''
         else:
@@ -158,6 +198,7 @@ def tokenization(txt):
     while '' in words: words.remove('')
     while ' ' in words: words.remove(' ')
     while '\n' in words: words.remove('\n')
+    print('word: ', words)
     return words
 
 
