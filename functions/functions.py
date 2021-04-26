@@ -29,7 +29,7 @@ def get_list_of_end_sentence_character():
 def identify_lang_of_a_given_file(file_content):
     lang = detect(file_content)
     print('Lang of given text: ', lang)
-    return lang
+    return lang.upper()
 
 
 def remove_double_spaces(text):
@@ -46,6 +46,13 @@ def get_english_stopwords_file_path():
     :return: Returns a file path
     """
     return 'files/englishStopwords.txt'
+
+
+def get_greek_stopwords_file_path():
+    """
+    :return: Returns a file path
+    """
+    return 'files/stop_words_greek.txt'
 
 
 def get_generated_file_path():
@@ -69,6 +76,13 @@ def get_sample_text_file_path():
     return 'files/sample-text.txt'
 
 
+def get_gr_sample_text_file_path():
+    """
+    :return: Returns a file path
+    """
+    return 'tests/files/greek_sample.txt'
+
+
 def generate_results_file(results_list_of_lists):
     """
     Create a txt file with the results from given list
@@ -76,20 +90,21 @@ def generate_results_file(results_list_of_lists):
      indicates the task and the other item is the result e.g. [Number of paragraphs : 8]
     """
     alphabet_char_list = string.ascii_lowercase
-    generated_file = open(get_generated_file_path() + get_generated_file_name(), "w+")
+    generated_file = open(get_generated_file_path() + get_generated_file_name(), "w+", encoding="utf-8")
     for idx, i in enumerate(results_list_of_lists):
         generated_file.write(alphabet_char_list[idx] + '. ' + i[0] + ' : ' + str(i[1]) + '\n')
     generated_file.close()
 
 
 def sum_of_paragraphs(text):
-    """In order to count the total sum ot paragraphs we check the text on every change line character \n, and increase
+    """In order to count the total sum of paragraphs we check the text on every change line character \n, and increase
     the counter by 1"""
     counter = 1  # initialized the counter from 1 since the last paragraph is always omitted
     previous_char = ''
     for char in text:
         if char == '\n':
-            if previous_char != '\n':  # check if the previous character is new line in order to tackle multiples lines
+            # check if the previous character is new line in order to tackle multiples lines separators
+            if previous_char != '\n':
                 counter += 1
         previous_char = char
     print('sum_of_paragraphs: ', counter)
@@ -106,9 +121,9 @@ def count_number_of_characters(text):
 
 
 def sum_of_sentences(text):
-    """In order to count the total sum ot sentences we check the text on every end of sentence character like '., !, ?'
+    """In order to count the total sum of sentences we check the text on every end of sentence character like '., !, ?'
     and we found this character we also check the previous and the following characters in order to tackle some cases
-    like ... Feb."""
+    like ..., Feb."""
     number_of_characters = count_number_of_characters(text)
     list_of_end_word = get_list_of_end_sentence_character()
     list_of_months = get_month_list()
@@ -172,10 +187,10 @@ def tokenization(text):
     word
     3. But if the character is on list
         4.and doesn't have ''' character we add the word in the words array
-        5.Otherwise we split the word by the ''' character and we check if the right side of splitted word is
+        5.Otherwise, we split the word by the ''' character and we check if the right side of splitted word is
         on contraction's list
-            6.If yes we check if the contractions has t char in order to tackle the negative cases
-            7.Otherwise we add the two words in the list of words.
+            6.If yes we check if the contractions have t char in order to tackle the negative cases
+            7.Otherwise, we add the two words in the list of words.
 
     :return: a list of tokens
     """
@@ -213,21 +228,26 @@ def tokenization(text):
     return tokens
 
 
-def get_stop_words_list():
+def get_stop_words_list(lang_of_file):
     """
     :return: Returns a list with stop words extracted from a file
     """
-    stop_words_list = get_the_content_of_a_file(get_english_stopwords_file_path())
+    stop_words_list = ''
+    if lang_of_file == 'EN':
+        stop_words_list = get_the_content_of_a_file(get_english_stopwords_file_path())
+    elif lang_of_file == 'EL':
+        stop_words_list = get_the_content_of_a_file(get_greek_stopwords_file_path())
     return stop_words_list.split('\n')
 
 
-def remove_stop_words(tokenized_list):
+def remove_stop_words(tokenized_list, lang_of_file):
     """
     This function takes a list with token return a list without some stop words form get_stop_words_list() list
+    :param lang_of_file:
     :param tokenized_list: A list of tokens e.g. ['Here', 'are', 'some', 'random']
     :return: A list with the token from given tokenized_list except the words from get_stop_words_list()
     """
-    stop_words_list = get_stop_words_list()
+    stop_words_list = get_stop_words_list(lang_of_file)
     new_word_list_without_excluded_words = []
     for word in tokenized_list:
         if word not in stop_words_list:
@@ -236,7 +256,6 @@ def remove_stop_words(tokenized_list):
     return new_word_list_without_excluded_words
 
 
-# https://stackoverflow.com/questions/62918528/sort-dict-or-list-by-second-value-of-the-tuple-and-then-by-the-first-one
 def order_dictionary(dictionary):
     """
     This function takes a dictionary e.g. {'Here': 1, 'some': 1, 'random': 1} and order it
@@ -304,6 +323,7 @@ def identify_word_type(tokenized_list):
                 dictionary = {word: tagger_regex_and_identifier[1]}
                 word_frequency_dictionary.update(dictionary)
                 break
+    print('Word Type: ', word_frequency_dictionary)
     return word_frequency_dictionary
 
 
@@ -320,11 +340,12 @@ def sum_of_distinct_word_types(tokenized_list):
     return Counter(list_of_pos)
 
 
-def generate_world_cloud_image(list_of_word_frequency_counts):
+def generate_world_cloud_image(list_of_word_frequency_counts, lang_of_file):
     """
     This function takes a dictionary which consists of a token and the sum of frequency,
     e.g. [('.', 35), ('the', 21), (',', 17), ('is', 14), ('I', 13)]
     from this dictionary get the top 50 occurred token and generated a word cloud image
+    :param lang_of_file:
     :param list_of_word_frequency_counts:
     """
     print('list_of_word_frequency_counts', list_of_word_frequency_counts)
@@ -335,7 +356,7 @@ def generate_world_cloud_image(list_of_word_frequency_counts):
     plt.figure(figsize=(15, 8))
     plt.imshow(word_cloud)
     plt.axis('off')
-    plt.savefig(get_generated_file_path() + 'word_cloud' + '.png', bbox_inches='tight')
+    plt.savefig(get_generated_file_path() + 'word_cloud_' + lang_of_file + '.png', bbox_inches='tight')
     plt.close()
 
 

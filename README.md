@@ -17,6 +17,7 @@ located in generatedFiles/results.txt
 
 # World Cloud 
 With the usage of the WordCloud library I generate the World Cloud image, in order to display the 50 most frequent words 
-Image located in generatedFiles/word_cloud.png
+Image located in generatedFiles/word_cloud_en.png or word_cloud_el.png
 
-![](generatedFiles/word_cloud.png)
+![](generatedFiles/word_cloud_en.png)
+![](generatedFiles/word_cloud_el.png)
