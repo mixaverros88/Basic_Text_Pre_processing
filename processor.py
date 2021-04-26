@@ -6,23 +6,18 @@ HW#1
 
 from functions.functions import *
 
-txt = open(get_sample_text_file_path()).read()
+file_content = get_the_content_of_a_file(get_sample_text_file_path())
+lang_of_file = identify_lang_of_a_given_file(file_content)
+tokenized_list = tokenization(file_content)
+list_of_word_frequency_counts = token_frequency(tokenized_list)
 
-sanitized_str = sanitize_string(txt)
-removed_stop_word_txt = remove_stop_words(sanitized_str)
-tokenized_txt = tokenization(txt)
-
-results = [['a.	Number of paragraphs.: ', sum_of_paragraphs(txt)],
-           ['b.	Number of sentences.: ', sum_of_sentences(txt)],
-           ['c.	Number of words : ', sum_of_words(txt)],
-           ['d.	Number of distinct words : ', sum_of_distinct_word_types(tokenized_txt)],
-           ['e.	List of word frequency counts.  : ', word_frequency(tokenized_txt)],
-           ['f.	Remove the stopwords  : ', removed_stop_word_txt],
-           ['Sum of Distinct Words: ', sum_of_distinct_words(txt)],
-           ['Sum of Words After Removing Stop Words : ', len(removed_stop_word_txt)],
-           ['Get Words: ', get_words(sanitized_str)],
+results = [['Number of paragraphs', sum_of_paragraphs(file_content)],
+           ['Number of sentences', sum_of_sentences(file_content)],
+           ['Number of words', tokenized_list],
+           ['Number of distinct words', sum_of_distinct_word_types(tokenized_list)],
+           ['List of word frequency counts', list_of_word_frequency_counts],
+           ['Remove the stopwords', remove_stop_words(tokenized_list)],
            ]
 
-generate_world_cloud(word_frequency(tokenized_txt))
+generate_world_cloud_image(list_of_word_frequency_counts)
 generate_results_file(results)
-

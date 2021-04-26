@@ -7,143 +7,141 @@ HW#1
 import re
 import matplotlib.pyplot as plt
 from wordcloud import WordCloud
-import inflect
 from collections import Counter
+import string
+from langdetect import detect
 
 
 def get_month_list():
-    """Get a list of months """
+    """
+    :return: A list of months Abbreviation
+    """
     return ['Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov']
 
 
 def get_list_of_end_sentence_character():
-    """Get a list of end words """
+    """
+    :return: A list of end punctuation characters
+    """
     return ['.', '!', '?']
 
 
-def get_list_of_confusion_characters():
-    return ['(', ')', ',']
+def identify_lang_of_a_given_file(file_content):
+    lang = detect(file_content)
+    print('Lang of given text: ', lang)
+    return lang
 
 
-def remove_double_spaces(txt):
-    """Remove double spaces in order to tackle cases  with consecutively spaces"""
-    return re.sub(' +', ' ', txt)
+def remove_double_spaces(text):
+    """
+    Remove double spaces in order to tackle cases with consecutively spaces
+    :param text:
+    :return: The given text without consecutively spaces
+    """
+    return re.sub(' +', ' ', text)
 
 
 def get_english_stopwords_file_path():
+    """
+    :return: Returns a file path
+    """
     return 'files/englishStopwords.txt'
 
 
 def get_generated_file_path():
+    """
+    :return: Returns a folder path
+    """
     return 'generatedFiles/'
 
 
 def get_generated_file_name():
+    """
+    :return: Returns a file name
+    """
     return 'results.txt'
 
 
 def get_sample_text_file_path():
+    """
+    :return: Returns a file path
+    """
     return 'files/sample-text.txt'
 
 
-def generate_results_file(results):
-    """This is a function create a txt file with the results """
+def generate_results_file(results_list_of_lists):
+    """
+    Create a txt file with the results from given list
+    :param results_list_of_lists: Every nested list contains 2 items the first is a string that
+     indicates the task and the other item is the result e.g. [Number of paragraphs : 8]
+    """
+    alphabet_char_list = string.ascii_lowercase
     generated_file = open(get_generated_file_path() + get_generated_file_name(), "w+")
-    for i in results:
-        generated_file.write(i[0] + str(i[1]) + '\n')
+    for idx, i in enumerate(results_list_of_lists):
+        generated_file.write(alphabet_char_list[idx] + '. ' + i[0] + ' : ' + str(i[1]) + '\n')
     generated_file.close()
 
 
-def sanitize_string(txt):
-    """This is a custom sanitizer function in order to get rid of same unneeded characters for easiest text
-    manipulation """
-    list_with = get_list_of_end_sentence_character() + ['-', ',', '\'', '"', '\n', '\t', '\r', '(', ')']
-    for char in list_with:
-        if char != '-' and char != '\n':
-            txt = txt.replace(char, "")
-        else:
-            txt = txt.replace(char, " ")
-    sanitized_string = remove_double_spaces(txt).strip()
-    print("sanitize_string: ", sanitized_string)
-    return sanitized_string
-
-
-def sum_of_paragraphs(txt):
-    """In order to count the total sum ot paragraphs we split the txt on every change line character \n"""
+def sum_of_paragraphs(text):
+    """In order to count the total sum ot paragraphs we check the text on every change line character \n, and increase
+    the counter by 1"""
     counter = 1  # initialized the counter from 1 since the last paragraph is always omitted
     previous_char = ''
-    for c in txt:
-        if c == '\n':
+    for char in text:
+        if char == '\n':
             if previous_char != '\n':  # check if the previous character is new line in order to tackle multiples lines
                 counter += 1
-        previous_char = c
+        previous_char = char
     print('sum_of_paragraphs: ', counter)
     return counter
 
 
-def count_number_of_characters(txt):
-    """Count the characters of given string"""
-    return len(txt)
+def count_number_of_characters(text):
+    """
+    Count the total characters of given string
+    :param text:
+    :return: The sum of characters of a given string
+    """
+    return len(text)
 
 
-def sum_of_sentences(txt):
-    number_of_characters = count_number_of_characters(txt)
+def sum_of_sentences(text):
+    """In order to count the total sum ot sentences we check the text on every end of sentence character like '., !, ?'
+    and we found this character we also check the previous and the following characters in order to tackle some cases
+    like ... Feb."""
+    number_of_characters = count_number_of_characters(text)
     list_of_end_word = get_list_of_end_sentence_character()
     list_of_months = get_month_list()
     counter = 0
     previous_char = ''
     pre_previous_char = ''
     pre_pre_previous_char = ''
-    for idx, c in enumerate(txt):
-        if c in list_of_end_word:
+    for idx, char in enumerate(text):
+        if char in list_of_end_word:
             if previous_char not in list_of_end_word:
                 if pre_previous_char not in list_of_end_word:
                     if pre_pre_previous_char not in list_of_end_word:
                         if (pre_pre_previous_char + pre_previous_char + previous_char) not in list_of_months:
                             if idx + 1 < number_of_characters:
-                                if txt[idx + 1] not in list_of_end_word:
+                                if text[idx + 1] not in list_of_end_word:
                                     counter += 1
                                     # print(txt[idx - 2] + '' + txt[idx - 1] + '' + txt[idx])
                             else:
                                 counter += 1
                                 # print(txt[idx - 2] + '' + txt[idx - 1] + '' + txt[idx])
-        previous_char = c
+        previous_char = char
         if idx > 0:
-            pre_previous_char = txt[idx - 1]
+            pre_previous_char = text[idx - 1]
         if idx > 1:
-            pre_pre_previous_char = txt[idx - 2]
+            pre_pre_previous_char = text[idx - 2]
     print('sum_of_sentences: ', counter)
     return counter
 
 
-def sum_of_words(txt):
-    list_of_p = ['(', ')', ',', ':', '!', ' ', '\n', '.']
-    words = []
-    word = ''
-    for w in txt:
-        if any(w in s for s in list_of_p):
-            if word != '':
-                words.append(word)
-            words.append(w)
-            word = ''
-        else:
-            word = word + w
-    while '' in words: words.remove('')
-    while ' ' in words: words.remove(' ')
-    while '\n' in words: words.remove('\n')
-    while '.' in words: words.remove('.')
-    while ',' in words: words.remove(',')
-    while ':' in words: words.remove(':')
-    while '!' in words: words.remove('!')
-    while '(' in words: words.remove('(')
-    while ')' in words: words.remove(')')
-    print(words)
-    print('sum_of_words: ', len(words))
-
-    return len(words)
-
-
 def get_additional_contractions():
+    """
+    :return: a list of additional contractions
+    """
     return [
         ['won', 'will'],
         ['Won', 'will'],
@@ -153,6 +151,9 @@ def get_additional_contractions():
 
 
 def get_contractions():
+    """
+    :return: a list of contractions
+    """
     return [
         ['ll', 'will'],
         ['ve', 'have'],
@@ -164,89 +165,120 @@ def get_contractions():
     ]
 
 
-def tokenization(txt):
-    list_of_p = ['(', ')', ',', ':', '!', ' ', '\n', '.']
-    words = []
-    word = ''
-    for idx, w in enumerate(txt):
-        if any(w in s for s in list_of_p):
-            if word != '':
-                if '\'' in word:
-                    splitted_word = word.split('\'')
-                    for con in get_contractions():
-                        if con[0] == splitted_word[1]:
-                            if con[0] == 't':
-                                isN = True
-                                for con2 in get_additional_contractions():
-                                    if con2[0] == splitted_word[0]:
-                                        words.append(con2[1])
-                                        isN = False
-                                if isN:
-                                    words.append(splitted_word[0][:-1])
-                                    words.append(con[1])
-                                    word = ''
-                            else:
-                                words.append(splitted_word[0])
-                                words.append(con[1])
-                                word = ''
-                else:
-                    words.append(word)
-            words.append(w)
-            word = ''
+def tokenization(text):
+    """In order to perform tokenization to a given text
+    1. We iterate in every character
+    2. If this character is not in list called list_of_punctuations_and_more then we add the character into variable
+    word
+    3. But if the character is on list
+        4.and doesn't have ''' character we add the word in the words array
+        5.Otherwise we split the word by the ''' character and we check if the right side of splitted word is
+        on contraction's list
+            6.If yes we check if the contractions has t char in order to tackle the negative cases
+            7.Otherwise we add the two words in the list of words.
+
+    :return: a list of tokens
+    """
+    list_of_punctuations_and_more = ['(', ')', ',', ':', '!', ' ', '\n', '.', '']
+    tokens = []
+    token = ''
+    for idx, character in enumerate(text):
+        if any(character in s for s in list_of_punctuations_and_more):
+            if '\'' in token:
+                splitted_word = token.split('\'')
+                for contraction in get_contractions():
+                    if contraction[0] == splitted_word[1]:
+                        if contraction[0] == 't':
+                            is_on_list = True
+                            for additional_contraction in get_additional_contractions():
+                                if additional_contraction[0] == splitted_word[0]:
+                                    tokens.append(additional_contraction[1])
+                                    is_on_list = False
+                            if is_on_list:
+                                tokens.append(splitted_word[0][:-1])
+                                tokens.append(contraction[1])
+                        else:
+                            tokens.append(splitted_word[0])
+                            tokens.append(contraction[1])
+            else:
+                tokens.append(token)
+            tokens.append(character)
+            token = ''
         else:
-            word = word + w
-    while '' in words: words.remove('')
-    while ' ' in words: words.remove(' ')
-    while '\n' in words: words.remove('\n')
-    print('word: ', words)
-    return words
+            token = token + character
 
-
-def get_words(txt):
-    print('get_words: ', txt.split(' '))
-    return txt.split(' ')
-
-
-def sum_of_distinct_words(txt):
-    print('sum_of_distinct_words: ', len(set(tokenization(txt))))
-    return len(set(tokenization(txt)))
+    unwanted_characters = {'', ' ', '\n'}
+    tokens = [ele for ele in tokens if ele not in unwanted_characters]  # remove unwanted characters
+    print('Tokens: ', tokens)
+    return tokens
 
 
 def get_stop_words_list():
-    stop_words_list = open(get_english_stopwords_file_path()).read()
+    """
+    :return: Returns a list with stop words extracted from a file
+    """
+    stop_words_list = get_the_content_of_a_file(get_english_stopwords_file_path())
     return stop_words_list.split('\n')
 
 
-def remove_stop_words(txt):
+def remove_stop_words(tokenized_list):
+    """
+    This function takes a list with token return a list without some stop words form get_stop_words_list() list
+    :param tokenized_list: A list of tokens e.g. ['Here', 'are', 'some', 'random']
+    :return: A list with the token from given tokenized_list except the words from get_stop_words_list()
+    """
     stop_words_list = get_stop_words_list()
-    new_list = []
-    for word in get_words(txt):
+    new_word_list_without_excluded_words = []
+    for word in tokenized_list:
         if word not in stop_words_list:
-            new_list.append(word)
-    print('remove_stop_words: ', new_list)
-    return new_list
+            new_word_list_without_excluded_words.append(word)
+    print('remove_stop_words: ', new_word_list_without_excluded_words)
+    return new_word_list_without_excluded_words
 
 
 # https://stackoverflow.com/questions/62918528/sort-dict-or-list-by-second-value-of-the-tuple-and-then-by-the-first-one
-def order_dictionary(data):
-    return sorted(data.items(), key=lambda x: (x[1], [-ord(letter) for letter in x[0]]), reverse=True)
+def order_dictionary(dictionary):
+    """
+    This function takes a dictionary e.g. {'Here': 1, 'some': 1, 'random': 1} and order it
+    :param dictionary: A list of tokens along with the sum o occurrences
+    :return: a dictionary most often occurrences in the descending order and if and words which have the same frequency
+    count are ordered by lexicographical
+    """
+    return sorted(dictionary.items(), key=lambda x: (x[1], [-ord(letter) for letter in x[0]]), reverse=True)
 
 
-def word_frequency(txt):
-    word_frequency_list = {}
-    for w in txt:
-        if not word_frequency_list.__contains__(w):
-            d = {w: 1}
-            word_frequency_list.update(d)
+def token_frequency(tokenized_list):
+    """
+    This function takes a list of tokens e.g. ['Here', 'are', 'some', 'random'],
+    and creates a dictionary which consist of every token the total number of occurrences
+    e.g. {'Here': 1, 'some': 1, 'random': 1}
+    After the creation of dictionary calls the order_dictionary() which orders the dictionary by to most often
+    occurrences in the descending order and if and words which have the same frequency count are ordered by
+    lexicographical order e.g. [('.', 35), ('the', 21), (',', 17), ('is', 14), ('I', 13)]
+
+    :param tokenized_list: A list of tokens e.g. ['Here', 'are', 'some', 'random']
+    :return: a dictionary most often occurrences in the descending order and if and words which have the same frequency
+    count are ordered by lexicographical
+    """
+
+    word_frequency_dictionary = {}
+    for token in tokenized_list:
+        if not word_frequency_dictionary.__contains__(token):
+            dictionary = {token: 1}
+            word_frequency_dictionary.update(dictionary)
         else:
-            count = word_frequency_list.pop(w) + 1
-            d = {w: count}
-            word_frequency_list.update(d)
-    print('word_frequency:', order_dictionary(word_frequency_list))
-    return order_dictionary(word_frequency_list)
+            count = word_frequency_dictionary.pop(token) + 1
+            dictionary = {token: count}
+            word_frequency_dictionary.update(dictionary)
+    returned_dict = order_dictionary(word_frequency_dictionary)
+    print('token_frequency: ', returned_dict)
+    return returned_dict
 
 
 def get_list_of_taggers():
+    """
+    :return: A list of regex and the respectively identifier
+    """
     return [
         ["^-?[0-9]+(.[0-9]+)?$", 'CD'],
         ["(The|the|A|a|An|an)$", 'AT'],
@@ -260,27 +292,44 @@ def get_list_of_taggers():
     ]
 
 
-def word_type(txt):
-    word_frequency_list = {}
-    for w in txt:
-        for rg in get_list_of_taggers():
-            if re.search(rg[0], w):
-                d = {w: rg[1]}
-                word_frequency_list.update(d)
+def identify_word_type(tokenized_list):
+    """
+    :param tokenized_list: A list of tokens e.g. ['Here', 'are', 'some', 'random']
+    :return: A dictionary with labeled every word e.g. Here : NN
+    """
+    word_frequency_dictionary = {}
+    for word in tokenized_list:
+        for tagger_regex_and_identifier in get_list_of_taggers():
+            if re.search(tagger_regex_and_identifier[0], word):
+                dictionary = {word: tagger_regex_and_identifier[1]}
+                word_frequency_dictionary.update(dictionary)
                 break
-    return word_frequency_list
+    return word_frequency_dictionary
 
 
-def sum_of_distinct_word_types(txt):
-    word_frequency_list = word_type(txt)
+def sum_of_distinct_word_types(tokenized_list):
+    """
+    :param tokenized_list: A list of tokens e.g. ['Here', 'are', 'some', 'random']
+    :return: A list with every type of word and the sum of instances
+    """
+    word_frequency_list = identify_word_type(tokenized_list)
     list_of_pos = []
     for value in word_frequency_list:
         list_of_pos.append(word_frequency_list[value])
+    print('sum_of_distinct_word_types: ', Counter(list_of_pos))
     return Counter(list_of_pos)
 
 
-def generate_world_cloud(word_list):
-    word_list = [f[0] for f in word_list][:50]  # convert a list of dictionaries to a list of strings
+def generate_world_cloud_image(list_of_word_frequency_counts):
+    """
+    This function takes a dictionary which consists of a token and the sum of frequency,
+    e.g. [('.', 35), ('the', 21), (',', 17), ('is', 14), ('I', 13)]
+    from this dictionary get the top 50 occurred token and generated a word cloud image
+    :param list_of_word_frequency_counts:
+    """
+    print('list_of_word_frequency_counts', list_of_word_frequency_counts)
+    # convert a list of dictionaries to a list of strings
+    word_list = [f[0] for f in list_of_word_frequency_counts][:50]
     unique_string = " ".join(word_list)  # convert list to string and generate
     word_cloud = WordCloud(width=1000, height=500).generate(unique_string)
     plt.figure(figsize=(15, 8))
@@ -288,3 +337,12 @@ def generate_world_cloud(word_list):
     plt.axis('off')
     plt.savefig(get_generated_file_path() + 'word_cloud' + '.png', bbox_inches='tight')
     plt.close()
+
+
+def get_the_content_of_a_file(file_path):
+    """
+    Takes a file path and returns the content of this file
+    :param file_path:
+    :return:
+    """
+    return open(file_path, encoding="utf8").read()
